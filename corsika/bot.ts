@@ -37,7 +37,7 @@ const botClient = axiod.create({
 
 async function sendData(url: string, data: Blob) {
   const formData = new FormData();
-  formData.append("file", data, "corsica.zip");
+  formData.append("file", data, "corsika.zip");
 
   const response = await fetch(url, {
     method: "POST",
@@ -50,7 +50,7 @@ async function sendData(url: string, data: Blob) {
 
 const organization = await botClient
   .post("/organizations", {
-    name: "aliquip nulla ut " + crypto.randomUUID(),
+    name: "Corsika " + crypto.randomUUID(),
     description: "Duis aliquip nostrud sint",
     metadata: {},
   })
@@ -70,12 +70,14 @@ const planningAreaFile = await (
 
 console.log(planningAreaFile);
 
+const planningUnitAreakm2 = 25;
+
 const project = await botClient
   .post("/projects", {
-    name: "test project " + crypto.randomUUID(),
+    name: "Corsika " + crypto.randomUUID(),
     organizationId: organization.data.id,
     planningUnitGridShape: "hexagon",
-    planningUnitAreakm2: 25,
+    planningUnitAreakm2: planningUnitAreakm2,
     planningAreaId: planningAreaFile.id,
   })
   .then((result) => result.data)
@@ -89,8 +91,8 @@ await pgClient.connect()
 await pgClient.queryArray(`INSERT INTO planning_units_geom (the_geom, type, size)
 select st_transform(geom, 4326) as the_geom,
 'hexagon' as type,
-25 as size from (
-  SELECT (ST_HexagonGrid(5000,
+${planningUnitAreakm2} as size from (
+  SELECT (ST_HexagonGrid(${Math.sqrt(planningUnitAreakm2) * 1e3},
     ST_Transform(a.the_geom, 3410))).*
     FROM planning_areas a
     WHERE project_id = '${project.data.id}'          
@@ -106,10 +108,10 @@ const scenarioStart = Process.hrtime();
 
 const scenario = await botClient
   .post("/scenarios", {
-    name: `test scenario in project ${project.data.attributes.name}`,
+    name: `Corsika ${project.data.attributes.name}`,
     type: "marxan",
     projectId: project.data.id,
-    description: "eu et sit",
+    description: "A Corsika scenario",
     wdpaIucnCategories: ["Not Applicable"],
     wdpaThreshold: 30,
   })
